@@ -10,6 +10,7 @@ def map_jh_arch(a, d):
     valid_jh_archs = d.getVar('valid_jh_archs', True).split()
 
     if   re.match('(i.86|athlon|x86.64)$', a):  return 'x86'
+    elif re.match('arm$', a):                   return 'arm'
     elif re.match('armeb$', a):                 return 'arm'
     elif re.match('aarch64$', a):               return 'arm64'
     elif re.match('aarch64_be$', a):            return 'arm64'

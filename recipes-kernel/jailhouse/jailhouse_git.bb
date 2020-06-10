@@ -11,13 +11,15 @@ LIC_FILES_CHKSUM = " \
 "
 
 PV = "0.12+git${SRCPV}"
-SRCREV = "8fd88c37ae1a4f7130ef40899c0eadd737c64832"
-BRANCH = "ti-jailhouse-0.12"
+#SRCREV = "8fd88c37ae1a4f7130ef40899c0eadd737c64832"
+#BRANCH = "ti-jailhouse-0.12"
+#SRC_URI = " \#
+#    git://git.ti.com/jailhouse/ti-jailhouse.git;protocol=git;branch=${BRANCH} \
+#    file://0001-tools-update-shebang-in-helper-scripts-for-python3.patch \
+#"
 
-SRC_URI = " \
-    git://git.ti.com/jailhouse/ti-jailhouse.git;protocol=git;branch=${BRANCH} \
-    file://0001-tools-update-shebang-in-helper-scripts-for-python3.patch \
-"
+SRC_URI = " git://github.com/siemens/jailhouse.git;protocol=https "
+SRCREV = "4ce7658dddfd5a1682a379d5ac46657e93fe1ff0"
 
 DEPENDS = "virtual/kernel dtc-native python3-mako-native python3-mako make-native"
 RDEPENDS_${PN} += "\
@@ -33,7 +35,7 @@ S = "${WORKDIR}/git"
 B = "${S}"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
-COMPATIBLE_MACHINE = "(raspberrypi4)"
+#COMPATIBLE_MACHINE = "(raspberrypi4)"
 
 JH_DATADIR ?= "${datadir}/jailhouse"
 JH_EXEC_DIR ?= "${libexecdir}/jailhouse"
@@ -42,26 +44,17 @@ CELLCONF_DIR ?= "${JH_DATADIR}/configs"
 INMATES_DIR ?= "${JH_DATADIR}/inmates"
 
 JH_CELL_FILES ?= "*.cell"
-JH_CELL_FILES_k3 ?= "k3-*.cell"
 
 JH_INMATE_DTB ?= ""
-JH_INMATE_DTB_am65xx ?= "inmate-k3-am654-idk.dtb"
-JH_INMATE_DTB_j7 ?= "inmate-k3-j721e-evm.dtb"
 
 JH_LINUX_DEMO_CELL ?= ""
-JH_LINUX_DEMO_CELL_am65xx ?= "k3-am654-idk-linux-demo.cell"
-JH_LINUX_DEMO_CELL_j7 ?= "k3-j721e-evm-linux-demo.cell"
 
 JH_SYSCONFIG_CELL ?= ""
-JH_SYSCONFIG_CELL_am65xx ?= "k3-am654-idk.cell"
-JH_SYSCONFIG_CELL_j7 ?= "k3-j721e-evm.cell"
 
 INITRAMFS_IMAGE ?= ""
 JH_RAMFS_IMAGE ?= "${INITRAMFS_IMAGE}"
 
 JH_CMDLINE ?= ""
-JH_CMDLINE_am65xx ?= "console=ttyS1,115200n8"
-JH_CMDLINE_j7 ?= "console=ttyS3,115200n8"
 
 do_configure() {
 	if [ -d ${STAGING_DIR_HOST}/${CELLCONF_DIR} ]; 
