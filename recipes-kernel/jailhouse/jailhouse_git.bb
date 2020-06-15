@@ -21,6 +21,7 @@ PV = "0.12+git${SRCPV}"
 SRC_URI = " git://github.com/siemens/jailhouse.git;protocol=https "
 SRCREV = "4ce7658dddfd5a1682a379d5ac46657e93fe1ff0"
 
+# hmm virtual/kernel should make sure the kernel _is_ built. ok, let us re-run but slow
 DEPENDS = "virtual/kernel dtc-native python3-mako-native python3-mako make-native"
 RDEPENDS_${PN} += "\
 	python3-curses\
@@ -29,10 +30,11 @@ RDEPENDS_${PN} += "\
 "
 
 require jailhouse-arch.inc
+# need to check these ... 
 inherit module python3native bash-completion deploy setuptools3
 
 S = "${WORKDIR}/git"
-B = "${S}"
+#B = "${S}"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 #COMPATIBLE_MACHINE = "(raspberrypi4)"
@@ -57,11 +59,16 @@ JH_RAMFS_IMAGE ?= "${INITRAMFS_IMAGE}"
 JH_CMDLINE ?= ""
 
 do_configure() {
-	if [ -d ${STAGING_DIR_HOST}/${CELLCONF_DIR} ]; 
+	sed -i -e "s#env python#env python3#g" ${S}/scripts/*
+	sed -i -e "s#env python#env python3#g" ${S}/tools/*
+	if [ -d ${STAGING_DIR_HOST}/${CELLCONF_DIR} ];
 	then
 		cp ${STAGING_DIR_HOST}/${CELLCONF_DIR}/*.c ${S}/configs/
 	fi
+	bbwarn "1111"
 }
+do_configure[depends] += "virtual/kernel:do_shared_workdir"
+do_configure[depends] += "virtual/kernel:do_compile_kernelmodules"
 
 USER_SPACE_CFLAGS = '${CFLAGS} -DLIBEXECDIR=\\\"${libexecdir}\\\" \
                     -DJAILHOUSE_VERSION=\\\"$JAILHOUSE_VERSION\\\" \
@@ -70,10 +77,13 @@ USER_SPACE_CFLAGS = '${CFLAGS} -DLIBEXECDIR=\\\"${libexecdir}\\\" \
 
 TOOLS_SRC_DIR = "${S}/tools"
 
-EXTRA_OEMAKE = "ARCH=${JH_ARCH} CROSS_COMPILE=${TARGET_PREFIX} CC="${CC}" KDIR=${STAGING_KERNEL_BUILDDIR}"
+EXTRA_OEMAKE = "ARCH=${JH_ARCH} CROSS_COMPILE=${TARGET_PREFIX} CC='${CC}' KDIR=${STAGING_KERNEL_BUILDDIR}"
 
 do_compile() {
+	bbwarn "2222"
+	cd ${S}
 	oe_runmake V=1
+	bbwarn "3333"
 }
 
 do_install() {
@@ -86,10 +96,10 @@ do_install() {
 	oe_runmake PIP=: PYTHON=python3 PYTHON_PIP_USEABLE=yes DESTDIR=${D} install
 
 	install -d ${D}${CELL_DIR}
-	install -m 0644 ${B}/configs/${JH_ARCH}/${JH_CELL_FILES} ${D}${CELL_DIR}/
+	install -m 0644 ${B}/configs/${JH_ARCH}/${JH_CELL_FILES} ${D}${CELL_DIR}/ || true
 
 	install -d ${D}${INMATES_DIR}
-	install -m 0644 ${B}/inmates/demos/${JH_ARCH}/*.bin ${D}${INMATES_DIR}
+	install -m 0644 ${B}/inmates/demos/${JH_ARCH}/*.bin ${D}${INMATES_DIR} || true
 
 	install -d ${D}/boot
 	if [ -n "${JH_RAMFS_IMAGE}" ]
