@@ -170,6 +170,7 @@ RDEPENDS_pyjailhouse = " \
 	python3-fcntl \
 	python3-shell \
 	"
+RDEPENDS_${PN}-demos = "jailhouse"
 
 RRECOMMENDS_${PN} = "${PN}-tools"
 INSANE_SKIP_${PN} = "ldflags"
