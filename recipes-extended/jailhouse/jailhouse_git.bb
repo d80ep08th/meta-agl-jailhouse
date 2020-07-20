@@ -10,19 +10,19 @@ LIC_FILES_CHKSUM = " \
     file://COPYING;md5=9fa7f895f96bde2d47fd5b7d95b6ba4d \
 "
 
-PV = "0.12+git${SRCPV}"
-#SRCREV = "8fd88c37ae1a4f7130ef40899c0eadd737c64832"
-#BRANCH = "ti-jailhouse-0.12"
-#SRC_URI = " \#
-#    git://git.ti.com/jailhouse/ti-jailhouse.git;protocol=git;branch=${BRANCH} \
-#    file://0001-tools-update-shebang-in-helper-scripts-for-python3.patch \
-#"
-
-SRC_URI = " git://github.com/siemens/jailhouse.git;protocol=https "
 SRCREV = "4ce7658dddfd5a1682a379d5ac46657e93fe1ff0"
 
-# hmm virtual/kernel should make sure the kernel _is_ built. ok, let us re-run but slow
-DEPENDS = "virtual/kernel dtc-native python3-mako-native python3-mako make-native"
+PV = "0.12+git${SRCPV}"
+
+SRC_URI = " git://github.com/siemens/jailhouse "
+
+DEPENDS = " \
+	virtual/kernel \
+	dtc-native \
+	python3-mako-native \
+	python3-mako \
+	make-native \"
+	
 RDEPENDS_${PN} += "\
 	python3-curses\
 	python3-datetime\
@@ -30,11 +30,11 @@ RDEPENDS_${PN} += "\
 "
 
 require jailhouse-arch.inc
-# need to check these ... 
 inherit module python3native bash-completion deploy setuptools3
 
+
 S = "${WORKDIR}/git"
-#B = "${S}"
+B = "${S}"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 #COMPATIBLE_MACHINE = "(raspberrypi4)"
@@ -47,16 +47,19 @@ INMATES_DIR ?= "${JH_DATADIR}/inmates"
 
 JH_CELL_FILES ?= "*.cell"
 
-JH_INMATE_DTB ?= ""
+#JH_INMATE_DTB ?= ""
+#JH_LINUX_DEMO_CELL ?= ""
+#JH_SYSCONFIG_CELL ?= ""
+#INITRAMFS_IMAGE ?= ""
+#JH_RAMFS_IMAGE ?= "${INITRAMFS_IMAGE}"
+#JH_CMDLINE ?= ""
 
-JH_LINUX_DEMO_CELL ?= ""
 
-JH_SYSCONFIG_CELL ?= ""
-
-INITRAMFS_IMAGE ?= ""
-JH_RAMFS_IMAGE ?= "${INITRAMFS_IMAGE}"
-
-JH_CMDLINE ?= ""
+EXTRA_OEMAKE = " \
+	ARCH=${JH_ARCH} \
+	CROSS_COMPILE=${TARGET_PREFIX} \
+	CC='${CC}' \
+	KDIR=${STAGING_KERNEL_BUILDDIR} \"
 
 do_configure() {
 	sed -i -e "s#env python#env python3#g" ${S}/scripts/*
@@ -65,25 +68,22 @@ do_configure() {
 	then
 		cp ${STAGING_DIR_HOST}/${CELLCONF_DIR}/*.c ${S}/configs/
 	fi
-	bbwarn "1111"
+	
 }
-do_configure[depends] += "virtual/kernel:do_shared_workdir"
-do_configure[depends] += "virtual/kernel:do_compile_kernelmodules"
 
-USER_SPACE_CFLAGS = '${CFLAGS} -DLIBEXECDIR=\\\"${libexecdir}\\\" \
+
+#do_configure[depends] += "virtual/kernel:do_shared_workdir"
+#do_configure[depends] += "virtual/kernel:do_compile_kernelmodules"
+
+#USER_SPACE_CFLAGS = '${CFLAGS} -DLIBEXECDIR=\\\"${libexecdir}\\\" \
                     -DJAILHOUSE_VERSION=\\\"$JAILHOUSE_VERSION\\\" \
                     -Wall -Wextra -Wmissing-declarations -Wmissing-prototypes -Werror \
                     -I../driver'
 
-TOOLS_SRC_DIR = "${S}/tools"
-
-EXTRA_OEMAKE = "ARCH=${JH_ARCH} CROSS_COMPILE=${TARGET_PREFIX} CC='${CC}' KDIR=${STAGING_KERNEL_BUILDDIR}"
+#TOOLS_SRC_DIR = "${S}/tools"
 
 do_compile() {
-	bbwarn "2222"
-	cd ${S}
 	oe_runmake V=1
-	bbwarn "3333"
 }
 
 do_install() {
@@ -136,32 +136,45 @@ do_install() {
 	fi
 }
 
-PACKAGE_BEFORE_PN = "kernel-module-jailhouse pyjailhouse ${PN}-tools"
-FILES_${PN} = "${base_libdir}/firmware ${libexecdir} ${sbindir} ${JH_DATADIR} /boot"
-FILES_pyjailhouse = "${PYTHON_SITEPACKAGES_DIR}"
-FILES_${PN}-tools = "${libexecdir}/${BPN}/${BPN}-*"
 
-RDEPENDS_${PN}-tools = "pyjailhouse python3-mmap python3-math python3-datetime python3-curses python3-compression"
-RDEPENDS_pyjailhouse = "python3-core python3-ctypes python3-fcntl python3-shell"
+
+
+
+
+
+
+PACKAGE_BEFORE_PN = "kernel-module-jailhouse pyjailhouse ${PN}-tools ${PN}-demos"
+
+#removed /boot from FILES_${PN}
+
+FILES_${PN} = "${base_libdir}/firmware ${libexecdir} ${sbindir} ${JH_DATADIR} "
+FILES_pyjailhouse = "${PYTHON_SITEPACKAGES_DIR}"
+FILES_${PN}-tools = "${libexecdir}/${BPN}/${BPN}-* ${JH_DATADIR}/*.tmpl"
+FILES_${PN}-demos = "${JH_DATADIR}/ ${sbindir}/ivshmem-demo"
+
+
+
+RDEPENDS_${PN}-tools = " \
+	pyjailhouse \
+	python3-mmap \
+	python3-math \
+	python3-datetime \
+	python3-curses \
+	python3-compression \
+	python3-mako \
+	"
+
+RDEPENDS_pyjailhouse = " \
+	python3-core \
+	python3-ctypes \
+	python3-fcntl \
+	python3-shell \
+	"
 
 RRECOMMENDS_${PN} = "${PN}-tools"
-
 INSANE_SKIP_${PN} = "ldflags"
-
 KERNEL_MODULE_AUTOLOAD += "jailhouse"
 
 # Any extra cells/inmates from external recipes/packages
-CELLS = ""
+# CELLS = ""
 
-python __anonymous () {
-    d.appendVarFlag('do_install', 'depends', ' virtual/kernel:do_deploy')
-    ramfs = d.getVar('JH_RAMFS_IMAGE', True)
-    if ramfs:
-        d.appendVarFlag('do_install', 'depends', ' ${JH_RAMFS_IMAGE}:do_image_complete')
-
-    # Setup DEPENDS and RDEPENDS to included cells
-    cells = d.getVar('CELLS', True) or ""
-    for cell in cells.split():
-        d.appendVar('DEPENDS', ' ' + cell)
-        d.appendVar('RDEPENDS_${PN}', ' ' + cell)
-}
