@@ -76,9 +76,9 @@ do_configure() {
 #do_configure[depends] += "virtual/kernel:do_compile_kernelmodules"
 
 #USER_SPACE_CFLAGS = '${CFLAGS} -DLIBEXECDIR=\\\"${libexecdir}\\\" \
-                    -DJAILHOUSE_VERSION=\\\"$JAILHOUSE_VERSION\\\" \
-                    -Wall -Wextra -Wmissing-declarations -Wmissing-prototypes -Werror \
-                    -I../driver'
+#                    -DJAILHOUSE_VERSION=\\\"$JAILHOUSE_VERSION\\\" \
+#                    -Wall -Wextra -Wmissing-declarations -Wmissing-prototypes -Werror \
+#                    -I../driver'
 
 #TOOLS_SRC_DIR = "${S}/tools"
 
