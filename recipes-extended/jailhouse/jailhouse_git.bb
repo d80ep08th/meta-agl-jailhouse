@@ -16,18 +16,9 @@ PV = "0.12+git${SRCPV}"
 
 SRC_URI = " git://github.com/siemens/jailhouse "
 
-DEPENDS = " \
-	virtual/kernel \
-	dtc-native \
-	python3-mako-native \
-	python3-mako \
-	make-native \"
+DEPENDS = "	virtual/kernel	dtc-native python3-mako-native 	python3-mako make-native "
 	
-RDEPENDS_${PN} += "\
-	python3-curses\
-	python3-datetime\
-	python3-mmap\
-"
+RDEPENDS_${PN} += "python3-curses  python3-datetime python3-mmap "
 
 require jailhouse-arch.inc
 inherit module python3native bash-completion deploy setuptools3
@@ -59,7 +50,8 @@ EXTRA_OEMAKE = " \
 	ARCH=${JH_ARCH} \
 	CROSS_COMPILE=${TARGET_PREFIX} \
 	CC='${CC}' \
-	KDIR=${STAGING_KERNEL_BUILDDIR} \"
+	KDIR=${STAGING_KERNEL_BUILDDIR} \
+"
 
 do_configure() {
 	sed -i -e "s#env python#env python3#g" ${S}/scripts/*
@@ -154,22 +146,9 @@ FILES_${PN}-demos = "${JH_DATADIR}/ ${sbindir}/ivshmem-demo"
 
 
 
-RDEPENDS_${PN}-tools = " \
-	pyjailhouse \
-	python3-mmap \
-	python3-math \
-	python3-datetime \
-	python3-curses \
-	python3-compression \
-	python3-mako \
-	"
+RDEPENDS_${PN}-tools = "pyjailhouse  python3-mmap python3-math 	python3-datetime python3-curses python3-compression python3-mako "
 
-RDEPENDS_pyjailhouse = " \
-	python3-core \
-	python3-ctypes \
-	python3-fcntl \
-	python3-shell \
-	"
+RDEPENDS_pyjailhouse = " python3-core 	python3-ctypes	python3-fcntl	python3-shell 	"
 RDEPENDS_${PN}-demos = "jailhouse"
 
 RRECOMMENDS_${PN} = "${PN}-tools"
